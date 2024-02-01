@@ -24,3 +24,18 @@ export class RegisterDto {
     profilePicture : string;
 
 }
+
+export class LoginDto {
+    @IsEmail()
+    @IsNotEmpty()
+    @IsDefined()
+    @IsNotEmpty()
+    email: string;
+
+    @IsNotEmpty()
+    @MinLength(8)
+    @MaxLength(14)
+    @IsDefined()
+    @IsNotEmpty()
+    password: string;
+}

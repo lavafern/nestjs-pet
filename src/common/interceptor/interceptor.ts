@@ -3,15 +3,9 @@ import { Observable, } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 export interface SuccessResponse<T> {
-  asu: boolean
-  path: any
-  data: T;
-}
-export interface FailedResponse {
   success: boolean
   path: any
-  message: string
-  data: null;
+  data: T;
 }
 
 @Injectable()
@@ -22,7 +16,7 @@ export class TransformInterceptor<T> implements NestInterceptor<T, SuccessRespon
         const request = ctx.getRequest();
 
         return {
-            asu: true,
+            success: true,
             path: request.url,
             data: res
         };

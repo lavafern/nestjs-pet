@@ -1,8 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { TransformInterceptor } from './interceptor/interceptor';
-import { HttpExceptionFilter } from './filter/exceptionFilter';
+import { TransformInterceptor } from './common/interceptor/interceptor';
+import { HttpExceptionFilter } from './common/filter/exceptionFilter';
 const PORT = process.env.PORT;
 
 async function bootstrap() {
