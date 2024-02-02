@@ -1,16 +1,18 @@
-import {  ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {  ConflictException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { LoginDto, RegisterDto } from './dto/register.dto';
 import { PrismaService } from 'src/prisma.service';
 import { User } from '@prisma/client';
 import { Hashing } from 'src/common/utils/hashing/hashing';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-
+import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class AuthService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly hashing: Hashing
-        ) {}
+        private readonly hashing: Hashing,
+        @Inject('JwtAccessSecret') private readonly jwtAccessSecret: JwtService,
+        @Inject('JwtRefreshSecret') private readonly jwtRefreshSecret: JwtService
+    ) {}
 
     async register(registerDto: RegisterDto) : Promise<User> {
             try {
@@ -39,8 +41,10 @@ export class AuthService {
 
     }
 
-    async login(loginDto: LoginDto) : Promise<User> {
+    async login(loginDto: LoginDto)  {
         try {
+
+            const acestoken = await this.jwtRefreshSecret.signAsync({name:"rian"});
             
             const checkUser = await this.prisma.user.findUniqueOrThrow({
                 where : {
@@ -54,11 +58,20 @@ export class AuthService {
 
             delete checkUser.password;
 
-            return checkUser;
+            return acestoken;
         } catch (err) {
             if (err instanceof(PrismaClientKnownRequestError) && err.code=='P2025') throw new UnauthorizedException("Wrong email or password");
             throw err;
         }
 
+    }
+
+    async decode(token : string) {
+        console.log(token);
+        
+        const r = await this.jwtRefreshSecret.verifyAsync(token);
+        console.log(r);
+        
+        return '';
     }
 }

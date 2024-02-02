@@ -56,7 +56,6 @@ export class UserService {
             if (err instanceof(PrismaClientKnownRequestError) && err.code=='P2025') {
                 throw new NotFoundException(err.message);
             }
-            
             throw err;
         }
     }
