@@ -5,6 +5,7 @@ import { User } from '@prisma/client';
 import { Hashing } from 'src/common/utils/hashing/hashing';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { JwtService } from '@nestjs/jwt';
+import { CredentialToken } from './interface/auth';
 @Injectable()
 export class AuthService {
     constructor(
@@ -41,10 +42,8 @@ export class AuthService {
 
     }
 
-    async login(loginDto: LoginDto)  {
+    async login(loginDto: LoginDto) : Promise<CredentialToken> {
         try {
-
-            const acestoken = await this.jwtRefreshSecret.signAsync({name:"rian"});
             
             const checkUser = await this.prisma.user.findUniqueOrThrow({
                 where : {
@@ -56,9 +55,27 @@ export class AuthService {
             
             if (!checkPassword) throw new UnauthorizedException("Wrong email or password");
 
+            const signAccessToken = this.jwtAccessSecret.signAsync({
+                id: checkUser.id,
+                email: checkUser.email
+            });
+
+            const signRefreshToken = this.jwtRefreshSecret.signAsync({
+                  id: checkUser.id,
+                  email: checkUser.email
+            });
+
+            const [accessToken,refreshToken] = await Promise.all([signAccessToken,signRefreshToken]);
+
             delete checkUser.password;
 
-            return acestoken;
+
+
+            return {
+                accessToken,
+                refreshToken
+            };
+
         } catch (err) {
             if (err instanceof(PrismaClientKnownRequestError) && err.code=='P2025') throw new UnauthorizedException("Wrong email or password");
             throw err;
