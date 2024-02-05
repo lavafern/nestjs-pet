@@ -6,11 +6,13 @@ import { Hashing } from 'src/common/utils/hashing/hashing';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { JwtService } from '@nestjs/jwt';
 import { CredentialToken } from './interface/auth';
+import { UserService } from 'src/user/user.service';
 @Injectable()
 export class AuthService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly hashing: Hashing,
+        private readonly userService: UserService,
         @Inject('JwtAccessSecret') private readonly jwtAccessSecret: JwtService,
         @Inject('JwtRefreshSecret') private readonly jwtRefreshSecret: JwtService
     ) {}
@@ -45,11 +47,7 @@ export class AuthService {
     async login(loginDto: LoginDto) : Promise<CredentialToken> {
         try {
             
-            const checkUser = await this.prisma.user.findUniqueOrThrow({
-                where : {
-                    email : loginDto.email
-                }
-            });
+            const checkUser = await this.userService.getByEmail(loginDto.email);
         
             const checkPassword = await this.hashing.comparePassword(loginDto.password,checkUser.password);
             

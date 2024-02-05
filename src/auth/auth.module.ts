@@ -7,6 +7,7 @@ import { UserModule } from 'src/user/user.module';
 import { JwtSecret1Module } from './jwt/refreshJwt';
 import { JwtSecret2Module } from './jwt/accessJwt';
 import { JwtModule } from '@nestjs/jwt';
+import { UserService } from 'src/user/user.service';
 
 @Module({
   imports:[
@@ -18,6 +19,7 @@ import { JwtModule } from '@nestjs/jwt';
   controllers: [AuthController],
   providers: [
     AuthService,
+    UserService,
     PrismaService,
     Hashing
   ]

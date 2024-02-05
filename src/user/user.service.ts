@@ -32,7 +32,35 @@ export class UserService {
         }
     }
 
-    async getDetail(userId : number) : Promise<GetUsersResponse>{
+    async getByEmail(userEmail: string) {
+        try {
+            const user = await this.prisma.user.findUniqueOrThrow({
+                where : {
+                    email : userEmail
+                },
+                select : {
+                    id : true,
+                    email : true,
+                    password: true,
+                    profile : {
+                        select : {
+                            name : true,
+                            profilePicture : true
+                        }
+                    }
+                }
+            });
+
+            return user;
+        } catch (err) {
+            if (err instanceof(PrismaClientKnownRequestError) && err.code=='P2025') {
+                throw new NotFoundException(err.message);
+            }
+            throw err;
+        }
+    }
+
+    async getById(userId : number) : Promise<GetUsersResponse>{
         try {
             const user = await this.prisma.user.findUniqueOrThrow({
                 where : {

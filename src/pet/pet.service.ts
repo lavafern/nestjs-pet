@@ -15,33 +15,33 @@ export class PetService {
         let insertDietQuery = `INSERT INTO "Diet" ("name","petId") VALUES `;
 
         for (let i = 0; i < addPetDto.diet.length; i++) {
-            insertDietQuery += `('${addPetDto.diet[i]}',petId)`;
+            insertDietQuery += `('${addPetDto.diet[i]}',petData."id")`;
             
             if (i < addPetDto.diet.length -1) insertDietQuery += ',';
 
         }
 
-        const newPet = await this.prisma.$queryRawUnsafe(`
+        await this.prisma.$executeRawUnsafe(`
         DO $$
             DECLARE
             	speciesId INT;
-                petId INT;
+                petData RECORD;
             BEGIN
             	SELECT id INTO speciesId FROM "Species" WHERE name=\'${addPetDto.species}\';
                 
             	IF FOUND THEN
-            		insert into "Pet" ("name","gender","picture","speciesId","authorId","status","class") VALUES (\'${addPetDto.name}\',\'${addPetDto.gender}\',\'${addPetDto.picture}\',speciesId,${userId},\'${addPetDto.status}\',\'${addPetDto.class}\') RETURNING id INTO petId;
+            		insert into "Pet" ("name","gender","picture","speciesId","authorId","status","class") VALUES (\'${addPetDto.name}\',\'${addPetDto.gender}\',\'${addPetDto.picture}\',speciesId,${userId},\'${addPetDto.status}\',\'${addPetDto.class}\') RETURNING * INTO petData;
                     ${insertDietQuery};
+                    RAISE NOTICE '%',petData;
             	ELSE
             		INSERT INTO "Species" ("name") VALUES (\'${addPetDto.species}\') RETURNING id INTO speciesId;
-            		INSERT INTO "Pet" ("name","gender","picture","speciesId","authorId","status","class") VALUES (\'${addPetDto.name}\',\'${addPetDto.gender}\',\'${addPetDto.picture}\',speciesId,${userId},\'${addPetDto.status}\',\'${addPetDto.class}\') RETURNING id INTO petId;
+            		INSERT INTO "Pet" ("name","gender","picture","speciesId","authorId","status","class") VALUES (\'${addPetDto.name}\',\'${addPetDto.gender}\',\'${addPetDto.picture}\',speciesId,${userId},\'${addPetDto.status}\',\'${addPetDto.class}\') RETURNING * INTO petData;
                     ${insertDietQuery};
+                    RAISE NOTICE '%',petData;
             	END IF;
+            COMMIT;
             END $$;
         `);
-
-        console.log(newPet);
-        
 
         return addPetDto;
     }
