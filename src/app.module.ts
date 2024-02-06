@@ -6,8 +6,9 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaService } from './prisma.service';
 import { UserModule } from './user/user.module';
 import { PetModule } from './pet/pet.module';
+import { ImagekitModule } from './shared/imagekit/imagekit/imagekit.module';
 @Module({
-  imports: [ConfigModule.forRoot(),AuthModule, UserModule,PetModule],
+  imports: [ConfigModule.forRoot(),AuthModule, UserModule,PetModule, ImagekitModule],
   controllers: [AppController],
   providers: [AppService,PrismaService],
 })
