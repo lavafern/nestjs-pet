@@ -1,16 +1,21 @@
-import {  ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {  ConflictException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { LoginDto, RegisterDto } from './dto/register.dto';
 import { PrismaService } from 'src/prisma.service';
 import { User } from '@prisma/client';
 import { Hashing } from 'src/common/utils/hashing/hashing';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-
+import { JwtService } from '@nestjs/jwt';
+import { CredentialToken } from './interface/auth';
+import { UserService } from 'src/user/user.service';
 @Injectable()
 export class AuthService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly hashing: Hashing
-        ) {}
+        private readonly hashing: Hashing,
+        private readonly userService: UserService,
+        @Inject('JwtAccessSecret') private readonly jwtAccessSecret: JwtService,
+        @Inject('JwtRefreshSecret') private readonly jwtRefreshSecret: JwtService
+    ) {}
 
     async register(registerDto: RegisterDto) : Promise<User> {
             try {
@@ -39,26 +44,49 @@ export class AuthService {
 
     }
 
-    async login(loginDto: LoginDto) : Promise<User> {
+    async login(loginDto: LoginDto) : Promise<CredentialToken> {
         try {
             
-            const checkUser = await this.prisma.user.findUniqueOrThrow({
-                where : {
-                    email : loginDto.email
-                }
-            });
+            const checkUser = await this.userService.getByEmail(loginDto.email);
         
             const checkPassword = await this.hashing.comparePassword(loginDto.password,checkUser.password);
             
             if (!checkPassword) throw new UnauthorizedException("Wrong email or password");
 
+            const signAccessToken = this.jwtAccessSecret.signAsync({
+                id: checkUser.id,
+                email: checkUser.email
+            });
+
+            const signRefreshToken = this.jwtRefreshSecret.signAsync({
+                  id: checkUser.id,
+                  email: checkUser.email
+            });
+
+            const [accessToken,refreshToken] = await Promise.all([signAccessToken,signRefreshToken]);
+
             delete checkUser.password;
 
-            return checkUser;
+
+
+            return {
+                accessToken,
+                refreshToken
+            };
+
         } catch (err) {
             if (err instanceof(PrismaClientKnownRequestError) && err.code=='P2025') throw new UnauthorizedException("Wrong email or password");
             throw err;
         }
 
+    }
+
+    async decode(token : string) {
+        console.log(token);
+        
+        const r = await this.jwtRefreshSecret.verifyAsync(token);
+        console.log(r);
+        
+        return '';
     }
 }

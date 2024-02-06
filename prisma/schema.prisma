@@ -15,6 +15,7 @@ model User {
   email String  @unique
   password  String
   profile Profile?
+  pet Pet[]
 }
 
 model Profile {
@@ -24,4 +25,83 @@ model Profile {
   profilePicture String
   author    User    @relation(fields: [authorId], references: [id])
   authorId  Int @unique
+}
+model Pet {
+  id        Int     @id @default(autoincrement())
+  status Status
+  name     String
+  gender   Gender
+  picture String
+  class IClass
+  species Species @relation(fields: [speciesId], references: [id])
+  speciesId Int
+  author    User    @relation(fields: [authorId], references: [id])
+  authorId  Int
+  diet Diet[] 
+  eatRecord EatRecord[]
+  poopRecord PoopRecord[]
+  otherRecord OtherRecord[]
+}
+
+model Species {
+  id        Int     @id @default(autoincrement())
+  name     String
+  pet Pet[]
+}
+
+model Diet {
+  id        Int     @id @default(autoincrement())
+  name     String
+  pet Pet @relation(fields: [petId], references: [id])
+  petId Int
+  eatRecord EatRecord[]
+}
+
+model EatRecord {
+  id        Int     @id @default(autoincrement())
+  time     DateTime
+  note  String?
+  pic String?
+  pet Pet  @relation(fields: [petId], references: [id])
+  petId  Int @unique
+  diet Diet @relation(fields: [dietId], references: [id])
+  dietId Int
+}
+model PoopRecord {
+  id        Int     @id @default(autoincrement())
+  time     DateTime
+  note  String?
+  pic String?
+  pet Pet  @relation(fields: [petId], references: [id])
+  petId  Int @unique
+}
+model OtherRecord {
+  id        Int     @id @default(autoincrement())
+  name     String
+  country   String?
+  profilePicture String
+  pet Pet  @relation(fields: [petId], references: [id])
+  petId  Int @unique
+}
+
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum Status {
+  active
+  notActive
+}
+
+enum IClass {
+  reptiles
+  mammals
+  bird
+  insect
+  invertebrates
+  fish
+  amphibian
 }
