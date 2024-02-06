@@ -1,8 +1,9 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto/register.dto';
 import { User } from '@prisma/client';
 import { Response } from 'express';
+import { AuthGuard } from './auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -11,12 +12,14 @@ export class AuthController {
         ) {}
 
     @Post('register')
+    @HttpCode(201)
     async register(@Body() registerDto: RegisterDto) : Promise<User> {
         
         return await this.authService.register(registerDto);
     }
 
     @Post('login')
+    @HttpCode(200)
     async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
         const credential = await this.authService.login(loginDto);
         
@@ -26,7 +29,20 @@ export class AuthController {
         return true;
     }
 
+    @Post('logout')
+    @UseGuards(AuthGuard)
+    @HttpCode(200)
+    async logout(@Res({ passthrough: true }) res: Response) {
+        console.log('awwa');
+        
+        res.clearCookie('_a');
+        res.clearCookie('_r');
+
+        return true;
+    }
+
     @Post('decode')
+    @HttpCode(200)
     async decode(@Body() body : {token : string}) {
         console.log(body);
         

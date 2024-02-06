@@ -17,10 +17,6 @@ export class AddPetDto {
     @IsString()
     gender: Gender;
 
-    @IsDefined()
-    @IsNotEmpty()
-    @IsString()
-    picture: string;
 
     @IsDefined()
     @IsNotEmpty()

@@ -27,7 +27,6 @@ export class UserService {
             return users;
         } catch (err) {
             console.log(err);
-            
             throw err;
         }
     }
