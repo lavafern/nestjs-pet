@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { imagekitContstants } from './imagekit.constants';
 import * as path from 'path';
 import { ImagekitConstants } from './imagekitConstants';
+import { ImagekitException } from 'src/common/exceptions/imagekitExceptions';
 declare function require(name:string);
 const ImageKit = require('imagekit');
 
@@ -16,17 +17,21 @@ export class ImagekitService {
     }
 
     async uploadImage(file: Express.Multer.File) : Promise<string>{
-        console.log('or',file.originalname);
-        console.log(path);
-        
-        
-        const base64File = file.buffer.toString('base64');
-        const {url} = await this.imagekit.upload({
-            fileName: Date.now() + path.extname(file.originalname),
-            file: base64File
-        });
+        try {
+            
+            const base64File = file.buffer.toString('base64');
+            const {url} = await this.imagekit.upload({
+                fileName: Date.now() + path.extname(file.originalname),
+                file: base64File
+            });
 
-        return url;
+            return url;
+
+        } catch (error) {
+            throw new ImagekitException("Failed to upload image");
+        }
+
+
     }
     
 }

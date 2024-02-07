@@ -33,3 +33,7 @@ export class AddPetDto {
     @IsArray()
     diet: Array<string>;
 }
+
+export class AddPetDtoResponse extends AddPetDto {
+    url: string;
+}; 

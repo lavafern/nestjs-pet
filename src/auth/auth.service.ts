@@ -1,7 +1,7 @@
-import {  ConflictException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {  ConflictException, ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { LoginDto, RegisterDto } from './dto/register.dto';
 import { PrismaService } from 'src/prisma.service';
-import { User } from '@prisma/client';
+import { Pet, User } from '@prisma/client';
 import { Hashing } from 'src/common/utils/hashing/hashing';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { JwtService } from '@nestjs/jwt';
@@ -81,9 +81,17 @@ export class AuthService {
 
     }
 
+    async validatePetOwner(petId: number, senderId: number): Promise<void> {
+
+        const pet : Array<{authorId: number}> = await this.prisma.$queryRaw`
+            SELECT "authorId" FROM "Pet" WHERE id=${petId};
+        `;
+
+        if (pet[0].authorId !== senderId) throw new ForbiddenException("Request sender must be pet owner");
+    }
+
 
     async decode(token : string) {
-        console.log(token);
         
         const r = await this.jwtRefreshSecret.verifyAsync(token);
         console.log(r);

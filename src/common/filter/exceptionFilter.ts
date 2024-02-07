@@ -1,7 +1,6 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { CustomException } from './customExeption';
-
+import { CustomException } from '../exceptions/customExeption';
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {

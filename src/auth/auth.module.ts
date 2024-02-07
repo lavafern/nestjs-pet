@@ -19,9 +19,9 @@ import { UserService } from 'src/user/user.service';
   controllers: [AuthController],
   providers: [
     AuthService,
-    UserService,
     PrismaService,
     Hashing
-  ]
+  ],
+  exports:[AuthService]
 })
 export class AuthModule {}
