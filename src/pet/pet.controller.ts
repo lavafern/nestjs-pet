@@ -1,12 +1,12 @@
-import {Body, Controller, Param, ParseIntPipe, Post, Put, Req,  UploadedFile,  UseGuards, UseInterceptors } from '@nestjs/common';
+import {Body, Controller, ForbiddenException, Param, ParseIntPipe, Post, Put, Req,  UploadedFile,  UseGuards, UseInterceptors } from '@nestjs/common';
 import { PetService } from './pet.service';
 import { AddPetDto, AddPetDtoResponse} from './dto/addPet.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { RequestWithUserData } from 'src/common/interfaces/common.interfaces';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { EditPetDto } from './dto/editPet.dto';
 import { imageUploadConstants } from 'src/common/constants/imageUpload.constants';
 import { AuthService } from 'src/auth/auth.service';
+import { EditPetDto } from './dto/editPet.dto';
 
 @Controller('pet')
 export class PetController {
@@ -32,11 +32,14 @@ export class PetController {
     @UseInterceptors(FileInterceptor('file'))
     async editPet(
         @Param('id',ParseIntPipe) petId: number,
-        // @Body() /*editPetDto: EditPetDto*/ ,
+        @Body() editPetDto: EditPetDto ,
         @Req() request: RequestWithUserData,
         @UploadedFile(imageUploadConstants) file: Express.Multer.File
     ) {
-        this.authService.validatePetOwner(petId,request.user.id);
+
+        return this.petService.getPetById(petId);
+        await this.authService.validatePetOwner(petId,request.user.id);
+        
         return true;
     }
 

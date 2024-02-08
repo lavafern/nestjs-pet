@@ -7,6 +7,7 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { JwtService } from '@nestjs/jwt';
 import { CredentialToken } from './interface/auth';
 import { UserService } from 'src/user/user.service';
+import { UserNotFoundException } from 'src/common/exceptions/userNotFoundException';
 @Injectable()
 export class AuthService {
     constructor(
@@ -41,12 +42,10 @@ export class AuthService {
                 if (err instanceof(PrismaClientKnownRequestError) && err.code=='P2002') throw new ConflictException("Email already used");
                 throw err;
             }
-
     }
 
     async login(loginDto: LoginDto) : Promise<CredentialToken> {
         try {
-            
             const checkUser = await this.userService.getByEmail(loginDto.email);
         
             const checkPassword = await this.hashing.comparePassword(loginDto.password,checkUser.password);
@@ -75,7 +74,8 @@ export class AuthService {
             };
 
         } catch (err) {
-            if (err instanceof(PrismaClientKnownRequestError) && err.code=='P2025') throw new UnauthorizedException("Wrong email or password");
+            console.log(err);
+            if (err instanceof UserNotFoundException) throw new UnauthorizedException("Wrong email or password");
             throw err;
         }
 
@@ -86,6 +86,7 @@ export class AuthService {
         const pet : Array<{authorId: number}> = await this.prisma.$queryRaw`
             SELECT "authorId" FROM "Pet" WHERE id=${petId};
         `;
+
 
         if (pet[0].authorId !== senderId) throw new ForbiddenException("Request sender must be pet owner");
     }

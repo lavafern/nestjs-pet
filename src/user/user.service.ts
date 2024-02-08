@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { GetUsersResponse } from './interfaces/user.intarfaces';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { UserNotFoundException } from 'src/common/exceptions/userNotFoundException';
 
 @Injectable()
 export class UserService {
@@ -53,7 +54,7 @@ export class UserService {
             return user;
         } catch (err) {
             if (err instanceof(PrismaClientKnownRequestError) && err.code=='P2025') {
-                throw new NotFoundException(err.message);
+                throw new UserNotFoundException();
             }
             throw err;
         }

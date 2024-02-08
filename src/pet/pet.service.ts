@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma.service';
 import { AddPetDto, AddPetDtoResponse} from './dto/addPet.dto';
 import { ImagekitService } from 'src/shared/imagekit/imagekit/imagekit.service';
 import { ImagekitException } from 'src/common/exceptions/imagekitExceptions';
+import { EditPetDto } from './dto/editPet.dto';
 
 @Injectable()
 export class PetService {
@@ -11,10 +12,6 @@ export class PetService {
         private readonly imagekit: ImagekitService
     ) {}
 
-    async petPicture() {
-
-    }
-    
     async addPet(addPetDto: AddPetDto, userId: number, pic: Express.Multer.File)  : Promise<AddPetDtoResponse>{
 
         try {
@@ -69,6 +66,31 @@ export class PetService {
 
         }
 
+    }
+
+    async getPetById(petId: number) {
+        try {
+            const petData = await this.prisma.$queryRaw`
+                SELECT * FROM "Pet" WHERE id=${petId}
+            `;
+
+            console.log(petData);
+            
+            return petData[0];
+
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async editPet(editPetDto: EditPetDto, pic: Express.Multer.File)  {
+        try {
+
+            // petPic = pic ? await this.imagekit.uploadImage(pic) : ;
+
+        } catch (err) {
+            
+        }
     }
     
 }
